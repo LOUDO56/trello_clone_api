@@ -119,6 +119,41 @@ router.post('/:projectId', requireAuth, async (req: Request, res: Response) => {
 		},
 	});
 
+	if (!userInProject) {
+		res.status(403).json({ message: 'Access denied' });
+		return;
+	}
+
+	const { name } = req.body as {
+		name: string;
+	};
+
+	if (!name) {
+		res.status(400).json({ message: 'Name is required' });
+		return;
+	}
+
+	const order = await prisma.column.count({
+		where: { projectId },
+	});
+
+	const column = await prisma.column.create({
+		data: {
+			name,
+			projectId,
+			order,
+		},
+		select: {
+			id: true,
+			name: true,
+			order: true,
+			projectId: true,
+		},
+	});
+
+	res.status(201).json({ column });
+});
+
 /**
  * @swagger
  * /api/columns/{projectId}/{columnId}:
@@ -157,41 +192,6 @@ router.post('/:projectId', requireAuth, async (req: Request, res: Response) => {
  *       403:
  *         description: Access denied
  */
-	if (!userInProject) {
-		res.status(403).json({ message: 'Access denied' });
-		return;
-	}
-
-	const { name } = req.body as {
-		name: string;
-	};
-
-	if (!name) {
-		res.status(400).json({ message: 'Name is required' });
-		return;
-	}
-
-	const order = await prisma.column.count({
-		where: { projectId },
-	});
-
-	const column = await prisma.column.create({
-		data: {
-			name,
-			projectId,
-			order,
-		},
-		select: {
-			id: true,
-			name: true,
-			order: true,
-			projectId: true,
-		},
-	});
-
-	res.status(201).json({ column });
-});
-
 router.patch('/:projectId/:columnId', requireAuth, async (req: Request, res: Response) => {
 
 	const user = getAuthUser(req);
@@ -206,35 +206,6 @@ router.patch('/:projectId/:columnId', requireAuth, async (req: Request, res: Res
 		return;
 	}
 
-/**
- * @swagger
- * /api/columns/{projectId}/{columnId}:
- *   delete:
- *     summary: Delete an existing column
- *     tags: [Columns]
- *     security:
- *       - cookieAuth: []
- *     parameters:
- *       - in: path
- *         name: projectId
- *         required: true
- *         schema:
- *           type: string
- *       - in: path
- *         name: columnId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       204:
- *         description: Column deleted successfully
- *       400:
- *         description: Missing project ID or column ID
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Access denied
- */
 	const userInProject = await prisma.userProject.findFirst({
 		where: {
 			projectId,
@@ -273,6 +244,35 @@ router.patch('/:projectId/:columnId', requireAuth, async (req: Request, res: Res
 	res.json({ column });
 });
 
+/**
+ * @swagger
+ * /api/columns/{projectId}/{columnId}:
+ *   delete:
+ *     summary: Delete an existing column
+ *     tags: [Columns]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: columnId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Column deleted successfully
+ *       400:
+ *         description: Missing project ID or column ID
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Access denied
+ */
 router.delete('/:projectId/:columnId', requireAuth, async (req: Request, res: Response) => {
 
 	const user = getAuthUser(req);

@@ -49,30 +49,7 @@ router.get('/', async (req: Request, res: Response) => {
  */
 router.post('/create', requireAuth, async (req: Request, res: Response) => {
 	const user = getAuthUser(req);
-/**
- * @swagger
- * /api/projects/{projectId}/join:
- *   post:
- *     summary: Request to join a project
- *     tags: [Projects]
- *     security:
- *       - cookieAuth: []
- *     parameters:
- *       - in: path
- *         name: projectId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Joined project successfully / request sent
- *       400:
- *         description: Invalid project ID or already a member/pending request
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Project not found
- */
+
 
 	const { name } = req.body as {
 		name: string;
@@ -107,6 +84,30 @@ router.post('/create', requireAuth, async (req: Request, res: Response) => {
 
 });
 
+/**
+ * @swagger
+ * /api/projects/{projectId}/join:
+ *   post:
+ *     summary: Request to join a project
+ *     tags: [Projects]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Joined project successfully / request sent
+ *       400:
+ *         description: Invalid project ID or already a member/pending request
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Project not found
+ */
 router.post('/:projectId/join', requireAuth, async (req: Request, res: Response) => {
 	const user = getAuthUser(req);
 	const projectId = req.params.projectId as string;
@@ -130,30 +131,6 @@ router.post('/:projectId/join', requireAuth, async (req: Request, res: Response)
 			userId_projectId: {
 				userId: user.id,
 				projectId: project.id,
-/**
- * @swagger
- * /api/projects/{projectId}/accept:
- *   post:
- *     summary: Accept a pending join request as an admin
- *     tags: [Projects]
- *     security:
- *       - cookieAuth: []
- *     parameters:
- *       - in: path
- *         name: projectId
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Join request accepted
- *       400:
- *         description: Invalid project ID or no pending request
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Project not found
- */
 			},
 		},
 	});
@@ -177,11 +154,12 @@ router.post('/:projectId/join', requireAuth, async (req: Request, res: Response)
 
 	res.json({ message: 'Joined project successfully' });
 });
+
 /**
  * @swagger
- * /api/projects/{projectId}/change-role:
+ * /api/projects/{projectId}/accept:
  *   post:
- *     summary: Change the role of a user in a project
+ *     summary: Accept a pending join request as an admin
  *     tags: [Projects]
  *     security:
  *       - cookieAuth: []
@@ -191,32 +169,15 @@ router.post('/:projectId/join', requireAuth, async (req: Request, res: Response)
  *         required: true
  *         schema:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - targetUserId
- *               - newRole
- *             properties:
- *               targetUserId:
- *                 type: string
- *               newRole:
- *                 type: string
- *                 enum: [ADMIN, MEMBER, REQUEST]
  *     responses:
  *       200:
- *         description: User role updated successfully
+ *         description: Join request accepted
  *       400:
- *         description: Missing fields
+ *         description: Invalid project ID or no pending request
  *       401:
  *         description: Unauthorized
- *       403:
- *         description: Only project admins can change roles
  *       404:
- *         description: Project or user membership not found
+ *         description: Project not found
  */
 
 router.post('/:projectId/accept', requireAuth, async (req: Request, res: Response) => {
@@ -278,6 +239,47 @@ router.post('/:projectId/accept', requireAuth, async (req: Request, res: Respons
 	res.json({ message: 'Join request(s) accepted' });
 });
 
+/**
+ * @swagger
+ * /api/projects/{projectId}/change-role:
+ *   post:
+ *     summary: Change the role of a user in a project
+ *     tags: [Projects]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - targetUserId
+ *               - newRole
+ *             properties:
+ *               targetUserId:
+ *                 type: string
+ *               newRole:
+ *                 type: string
+ *                 enum: [ADMIN, MEMBER, REQUEST]
+ *     responses:
+ *       200:
+ *         description: User role updated successfully
+ *       400:
+ *         description: Missing fields
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Only project admins can change roles
+ *       404:
+ *         description: Project or user membership not found
+ */
 router.post('/:projectId/change-role', requireAuth, async (req: Request, res: Response) => {
 	const user = getAuthUser(req);
 	const projectId = req.params.projectId as string;
