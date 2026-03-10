@@ -10,6 +10,12 @@ datasource db {
   provider = "sqlite"
 }
 
+enum Role {
+  REQUEST
+  MEMBER
+  ADMIN
+}
+
 model User {
   id                 String        @id @default(uuid())
   name               String
@@ -17,6 +23,7 @@ model User {
   password           String
   ownedProjects      Project[]     @relation("ProjectOwner")
   projectMemberships UserProject[]
+  assignedTasks      Task[]        @relation("TaskAssignee")
 }
 
 model Project {
@@ -30,9 +37,11 @@ model Project {
   @@index([ownerId])
 }
 
+
 model UserProject {
   userId    String
   projectId String
+  role      Role    @default(REQUEST)
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
@@ -52,12 +61,15 @@ model Column {
 }
 
 model Task {
-  id          String  @id @default(uuid())
-  title       String
-  description String?
-  done        Boolean @default(false)
-  columnId    String
-  column      Column  @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  id             String  @id @default(uuid())
+  title          String
+  description    String?
+  done           Boolean @default(false)
+  columnId       String
+  column         Column  @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  assignedUserId String?
+  assignedUser   User?   @relation("TaskAssignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
 
   @@index([columnId])
+  @@index([assignedUserId])
 }

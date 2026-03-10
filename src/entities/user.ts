@@ -19,6 +19,39 @@ const setSessionCookie = (res: Response, token: string): void => {
   });
 };
 
+/**
+ * @swagger
+ * /api/users/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *       400:
+ *         description: Missing required fields
+ *       409:
+ *         description: Email already in use
+ *       500:
+ *         description: Server error
+ */
 router.post('/register', async (req: Request, res: Response) => {
   const { username, email, password } = req.body as {
     username?: string;
@@ -74,6 +107,36 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/users/login:
+ *   post:
+ *     summary: Authenticate a user and set a session cookie
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User authenticated successfully
+ *       400:
+ *         description: Missing email or password
+ *       401:
+ *         description: Invalid credentials
+ *       500:
+ *         description: Server error
+ */
 router.post('/login', async (req: Request, res: Response) => {
   const { email, password } = req.body as {
     email?: string;
