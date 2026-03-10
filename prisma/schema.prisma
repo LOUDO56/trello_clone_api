@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id                 String        @id @default(uuid())
+  name               String
+  email              String        @unique
+  password           String
+  ownedProjects      Project[]     @relation("ProjectOwner")
+  projectMemberships UserProject[]
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  name        String
+  ownerId     String
+  owner       User          @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  columns     Column[]
+  memberships UserProject[]
+
+  @@index([ownerId])
+}
+
+model UserProject {
+  userId    String
+  projectId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@id([userId, projectId])
+  @@index([projectId])
+}
+
+model Column {
+  id        String  @id @default(uuid())
+  name      String
+  order       Int 
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@index([projectId])
+}
+
+model Task {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+  done        Boolean @default(false)
+  columnId    String
+  column      Column  @relation(fields: [columnId], references: [id], onDelete: Cascade)
+
+  @@index([columnId])
+}
